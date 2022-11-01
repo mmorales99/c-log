@@ -120,24 +120,15 @@ int tolog(const LOG_LEVEL level, const string str, va_list args)
     if(alreadyCicled)
         fseek(fp,0,SEEK_END);
 
-    fprintf(fp, "[%s - %s] ", date, LEVELS[level]);
-    vfprintf(fp, message, args);
+    int total_needed_mem = fprintf(fp, "[%s - %s] ", date, LEVELS[level]);
+    total_needed_mem += vfprintf(fp, message, args);
     if(LOG_CONF.CONSOLE)
     {
-        fseek(fp, -2, SEEK_END);
-        char c = fgetc(fp);
-        int total_needed_mem = 0;
-        int iteracion = 2;
-        while (c!='\n')
-        {
-            fseek(fp, -1*iteracion++, SEEK_END);
-            c = fgetc(fp);
-            total_needed_mem++;
-        }
+        fseek(fp, -1*total_needed_mem, SEEK_END);
         string temp = (string)malloc(sizeof(char)*total_needed_mem);
         fgets(temp, total_needed_mem, fp);
         printf("%s\n",temp);
-        free(temp)
+        free(temp);
     }
 
     long int totalChars = ftell(fp);
