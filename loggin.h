@@ -102,12 +102,6 @@ int tolog(const LOG_LEVEL level, const string str, va_list args)
     time(&now);
     char * date = ctime(&now);
     date[strlen(date) - 1] = '\0';
-    // printf("CONSOLE: %i", LOG_CONF.CONSOLE);
-    if(LOG_CONF.CONSOLE)
-    {
-        printf("[%s - %s] ", date, LEVELS[level]);
-        vprintf(message, args);
-    }
 
     FILE *fp;
 
@@ -128,6 +122,23 @@ int tolog(const LOG_LEVEL level, const string str, va_list args)
 
     fprintf(fp, "[%s - %s] ", date, LEVELS[level]);
     vfprintf(fp, message, args);
+    if(LOG_CONF.CONSOLE)
+    {
+        fseek(fp, -2, SEEK_END);
+        char c = fgetc(fp);
+        int total_needed_mem = 0;
+        int iteracion = 2;
+        while (c!='\n')
+        {
+            fseek(fp, -1*iteracion++, SEEK_END);
+            c = fgetc(fp);
+            total_needed_mem++;
+        }
+        string temp = (string)malloc(sizeof(char)*total_needed_mem);
+        fgets(temp, total_needed_mem, fp);
+        printf("%s\n",temp);
+        free(temp)
+    }
 
     long int totalChars = ftell(fp);
     if(totalChars >= LOG_CONF.MAXFILEMB)
